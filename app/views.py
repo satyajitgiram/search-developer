@@ -2,12 +2,13 @@ from django.shortcuts import render, redirect
 from .forms import ProjectForm
 from . import models
 from django.contrib.auth.decorators import login_required
+from .utils import searchProjects
 
 # Create your views here.
 
 def home(request):
-    project = models.Project.objects.all()
-    context = {'projects': project}
+    project, search_query = searchProjects(request)
+    context = {'projects': project, 'search_query': search_query}
     return render(request,"projects/index.html",context)
 
 @login_required(login_url='login')
