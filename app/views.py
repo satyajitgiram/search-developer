@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect
-from .forms import ProjectForm
+from .forms import ProjectForm, ReviewForm
 from . import models
 from django.contrib.auth.decorators import login_required
-from .utils import searchProjects
+from .utils import searchProjects, paginateProjects
+from django.contrib import messages
 
 # Create your views here.
 
+
+
 def home(request):
     project, search_query = searchProjects(request)
-    context = {'projects': project, 'search_query': search_query}
+    custom_range, project = paginateProjects(request, project, 4)
+
+    context = {'projects': project, 'search_query': search_query,'custom_range ': custom_range}
     return render(request,"projects/index.html",context)
 
 @login_required(login_url='login')
@@ -21,7 +26,8 @@ def addProject(request):
         if form.is_valid():
             project =  form.save(commit=False)
             project.owner = profile
-            return redirect('projects')
+            project.save()
+            return redirect('home')
 
     context = {'form':form}
     return render(request,"projects/project-form.html",context)
@@ -43,8 +49,23 @@ def editProject(request, id):
     return render(request,"edit_project.html",context)
 
 def singleProject(request,id):
-    project = models.Project.objects.get(id=id)
-    context = {'project':project}
+    projectObj = models.Project.objects.get(id=id)
+    form = ReviewForm()
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        review = form.save(commit=False)
+        review.project = projectObj
+        review.owner = request.user.profile
+        review.save()
+
+        # Update project vote count
+        projectObj.getVoteCount
+        
+        messages.success(request,'your Review was successfully submitted!')
+        return redirect('single_project', id=projectObj.id)
+
+
+    context = {'project':projectObj, 'form':form}
     return render(request, 'projects/single_project.html',context)
 
 def deleteProject(request,id):

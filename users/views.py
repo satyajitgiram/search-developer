@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
-from .models import Profile
+from .models import Profile, Message
 from .models import Skill
 from app.models import Project
 from .utils import searchProfiles
@@ -20,8 +20,8 @@ def loginPage(request):
         return redirect('profile')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST['username'].lower()
+        password = request.POST['password']
 
         try:
             user = User.objects.get(username=username)
@@ -33,7 +33,7 @@ def loginPage(request):
         if user is not None:
             messages.success(request, "Logged in ")
             login(request, user)
-            return redirect('profile')
+            return redirect(request.GET['next'] if 'next' in request.GET else 'profile')
         else:
             messages.error(request, "Username or password is incorrect")
 
@@ -161,3 +161,27 @@ def delete_skill(request,pk):
 
     context = {'object':skill}
     return render(request, 'delete.html',context)
+
+@login_required(login_url='login')
+def inbox(request):
+    profile = request.user.profile
+    messageRequests = profile.messages.all()
+    unreadCount = messageRequests.filter(is_read=False).count()
+    context = {'messageRequests':messageRequests,'unreadCount':unreadCount}
+    return render(request, 'users/inbox.html',context)
+
+@login_required(login_url='login')
+def viewMessage(request, pk):
+    profile = request.user.profile
+    message = profile.messages.get(id=pk)
+    if message.is_read == False:
+        message.is_read = True
+        message.save()
+    context={'message':message}
+    return render(request, 'users/message.html',context)
+
+def createMessage(request, pk):
+    recipient = Profile.objects.get(id=pk)
+
+    context = {'recipient':recipient}
+    return render(request,'users/message_form.html',context)
