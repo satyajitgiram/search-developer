@@ -1,14 +1,20 @@
 {
+    "version": 2,
     "builds": [
-    {
+      {
         "src": "devsearch/wsgi.py",
-        "use": "@vercel/python"
-        }
-        ],
-        "routes": [
-            {
-            "src": "/(.*)",
-            "dest": "devsearch/wsgi.py"
-        }
-        ]
-}
+        "use": "@vercel/python",
+        "config": { "maxLambdaSize": "25mb", "runtime": "python3.9" }
+      }
+    ],
+    "routes": [
+      {
+        "src": "/static/(.*)",
+        "dest": "/devsearch/static/$1"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "devsearch/wsgi.py"
+      }
+    ]
+  }
