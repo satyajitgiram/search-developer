@@ -2,6 +2,8 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from .models import Profile
+from django.conf import settings
+from django.core.mail import send_mail
 
 
 # @receiver(post_save, sender=Model)
@@ -17,6 +19,18 @@ def createProfile(sender,instance,created,**kwargs):
             email = user.email,
             name = user.first_name,
             )
+        
+        subject = "Welcome To Devsearch"
+        message = "We are glad you are here!"
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            [profile.email],
+            fail_silently=False,
+        )
+        print("Mail Sent successfully")
+
 
 def updateProfile(instance, created, **kwargs):
     profile = instance
@@ -28,18 +42,18 @@ def updateProfile(instance, created, **kwargs):
         user.email = profile.email
         user.save()
 
-
  
 
-def ProfileDelete(sender,instance,**kwargs):
-    user = instance.user
-    user.delete()
-    print("Profile Deleted! ")
-
+def deleteProfile(sender, instance, **kwargs):
+    try:
+        user = instance.user
+        user.delete()
+    except:
+        pass
 
 post_save.connect(createProfile,sender=User)
 post_save.connect(updateProfile,sender=Profile)
-post_delete.connect(ProfileDelete,sender=Profile)
+post_delete.connect(deleteProfile,sender=Profile)
 
 
 #    Well, it’s either kiss me or kill me
