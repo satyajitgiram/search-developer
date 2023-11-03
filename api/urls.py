@@ -10,6 +10,7 @@ urlpatterns = [
     path('routes/',views.getRoutes),
     path('projects/',views.getProjects),
     path('project/<str:pk>/',views.getProject),
+    path('projects/<str:pk>/vote/', views.projectVote, name='project-vote'),
 
 ]
 
