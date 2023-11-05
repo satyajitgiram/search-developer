@@ -1,18 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <form action="" method="post">
-        {% csrf_token %}
-        {{form.as_p}}
 
-        <input type="submit" value="Submit">
-    </form>
-    
-</body>
-</html>
+{% extends 'main.html' %}
+{% block content %}
+
+
+
+<!-- Main Section -->
+<main class="formPage my-xl">
+    <div class="content-box">
+        <div class="formWrapper">
+            <a class="backButton" href="{% url 'account' %}"><i class="im im-angle-left"></i></a>
+            <br>
+
+            <form class="form" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                {% for field in form %}
+                <!-- Input:Text -->
+                <div class="form__field">
+                    <label for="formInput#text">{{field.label}}</label>
+                    {{field}}
+                </div>
+                {% endfor %}
+
+                <div class="form__field">
+                    {% for tag in project.tags.all %}
+                    <div class="project-tag tag tag--pill tag--main" data-tag="{{tag.id}}"
+                        data-project="{{project.id}}">{{tag.name}} &#215;</div>
+                    {% endfor %}
+                </div>
+
+                    <div class="form__field">
+                        <label for="formInput#text">Tags</label>
+                        <textarea class="input" name="newtags" placeholder="Add tags here...(comma seperated)"></textarea>
+                    </div>
+                <input class="btn btn--sub btn--lg  my-md" type="submit" value="Submit" />
+            </form>
+        </div>
+    </div>
+</main>
+
+
+{% endblock %}

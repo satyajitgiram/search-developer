@@ -6,7 +6,7 @@ class ProjectForm(ModelForm):
     class Meta:
         model = Project
         # fields = '__all__' #[you can add specific fields here by sepereting using column]
-        fields = ['title', 'featured_image','description','demo_link','demo_link','source_link','tags']
+        fields = ['title', 'featured_image','description','demo_link','demo_link','source_link']
 
         widgets = {
             'tags':forms.CheckboxSelectMultiple(),

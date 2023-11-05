@@ -3,12 +3,10 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
 from .models import Profile, Message
-from .models import Skill
-from app.models import Project
-from .utils import searchProfiles
+
+from .utils import searchProfiles, paginateProfiles
 from .forms import CustomUserCreationForm, ProfileForm, SkillForm, MessageForm
 
 # Create your views here.
@@ -72,7 +70,9 @@ def logoutUser(request):
 
 def profile(request):
     profiles, search_query = searchProfiles(request)
-    context = {'profiles':profiles, 'search_query':search_query}
+    custom_range, profiles = paginateProfiles(request, profiles, 6)
+    context = {'profiles': profiles, 'search_query': search_query,
+               'custom_range': custom_range}
     return render(request, 'users/profiles.html',context)
 
 def userProfile(request, pk):

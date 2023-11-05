@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from .forms import ProjectForm, ReviewForm
 from . import models
+from .models import Tags
 from django.contrib.auth.decorators import login_required
 from .utils import searchProjects, paginateProjects
 from django.contrib import messages
@@ -10,10 +11,11 @@ from django.contrib import messages
 
 
 def home(request):
+    print("INSIDE HOME")
     project, search_query = searchProjects(request)
-    custom_range, project = paginateProjects(request, project, 4)
+    custom_range, project = paginateProjects(request, project, 9)
 
-    context = {'projects': project, 'search_query': search_query,'custom_range ': custom_range}
+    context = {'projects': project, 'search_query': search_query,'custom_range': custom_range}
     return render(request,"projects/index.html",context)
 
 @login_required(login_url='login')
@@ -22,11 +24,15 @@ def addProject(request):
     form = ProjectForm()
 
     if request.method == 'POST':
+        newtags = request.POST.get('newtags').replace(" ",'').split(',')
         form = ProjectForm(request.POST, request.FILES)
         if form.is_valid():
             project =  form.save(commit=False)
             project.owner = profile
             project.save()
+            for tag in newtags:
+                tag, created = Tags.objects.get_or_create(name=tag)
+                project.tags.add(tag)
             return redirect('home')
 
     context = {'form':form}
@@ -40,13 +46,19 @@ def editProject(request, id):
     form = ProjectForm(instance=project)
 
     if request.method == 'POST':
+        newtags = request.POST.get('newtags').replace(" ",'').split(',')
         form = ProjectForm(request.POST,request.FILES, instance=project)
         if form.is_valid():
-            form.save()
+
+            project = form.save()
+            for tag in newtags:
+                tag, created = Tags.objects.get_or_create(name=tag)
+                project.tags.add(tag)
             return redirect('home')
     
     context = {'form':form}
-    return render(request,"edit_project.html",context)
+    return render(request,"projects/project-form.html",context)
+
 
 def singleProject(request,id):
     projectObj = models.Project.objects.get(id=id)
