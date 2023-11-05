@@ -56,7 +56,7 @@ def editProject(request, id):
                 project.tags.add(tag)
             return redirect('home')
     
-    context = {'form':form}
+    context = {'form':form, 'project':project}
     return render(request,"projects/project-form.html",context)
 
 
